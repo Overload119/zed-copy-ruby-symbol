@@ -14,7 +14,7 @@ If multiple symbols contain the cursor, the script picks the first deterministic
 ## Requirements
 
 - Zed with project tasks enabled.
-- Python 3.
+- [Bun](https://bun.sh/) runtime.
 - Sorbet LSP available in your project or shell path.
   - Default command used by the script: `bundle exec srb tc --lsp`
 - macOS for clipboard copy (`pbcopy`).
@@ -25,7 +25,7 @@ The task is defined in `.zed/tasks.json`:
 
 - Label: `Ruby: Copy FQN at Cursor`
 - Runs:
-  - `python3 scripts/copy_ruby_fqn.py --file "$ZED_FILE" --row "$ZED_ROW" --column "$ZED_COLUMN"`
+  - `bun run scripts/copy_ruby_fqn.ts --file "$ZED_FILE" --row "$ZED_ROW" --column "$ZED_COLUMN"`
 
 Run it from command palette via `task: spawn`, then pick `Ruby: Copy FQN at Cursor`.
 
@@ -52,7 +52,7 @@ Add this to your `keymap.json` to trigger the task directly:
 
 ## Script options
 
-`scripts/copy_ruby_fqn.py` supports:
+`scripts/copy_ruby_fqn.ts` supports:
 
 - `--file`
 - `--row`

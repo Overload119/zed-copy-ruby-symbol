@@ -1,9 +1,10 @@
 [
   {
     "label": "Ruby: Copy FQN at Cursor",
-    "command": "python3",
+    "command": "bun",
     "args": [
-      "scripts/copy_ruby_fqn.py",
+      "run",
+      "scripts/copy_ruby_fqn.ts",
       "--file",
       "$ZED_FILE",
       "--row",
