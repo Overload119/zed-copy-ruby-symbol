@@ -241,17 +241,31 @@ function flattenSymbolInformation(
 function chooseSymbolAtCursor(
   candidates: SymbolCandidate[],
   line: number,
-  char: number
-): SymbolCandidate {
+  char: number,
+  verbose: boolean = false
+): SymbolCandidate | null {
   const containing = candidates.filter((c) => contains(c, line, char));
   if (containing.length === 0) {
-    throw new Error("No symbol contains the current cursor position.");
+    if (verbose) {
+      console.error(`[verbose] No symbol contains cursor at line ${line}, char ${char}`);
+      console.error(`[verbose] Available symbols (${candidates.length}):`);
+      for (const c of candidates.slice(0, 10)) {
+        console.error(`[verbose]   - ${c.name} [${c.kind}] at ${c.startLine}:${c.startChar}-${c.endLine}:${c.endChar} path=${c.path.map(([n]) => n).join(" > ")}`);
+      }
+      if (candidates.length > 10) {
+        console.error(`[verbose]   ... and ${candidates.length - 10} more`);
+      }
+    }
+    return null;
   }
   containing.sort((a, b) => {
     const [aLines, aChars] = spanSize(a);
     const [bLines, bChars] = spanSize(b);
     return aLines - bLines || aChars - bChars || a.order - b.order;
   });
+  if (verbose) {
+    console.error(`[verbose] Selected symbol: ${containing[0].name}`);
+  }
   return containing[0];
 }
 
@@ -397,9 +411,21 @@ async function main(): Promise<number> {
       "lsp-command": { type: "string", default: DEFAULT_LSP_COMMAND },
       "timeout-seconds": { type: "string", default: "12" },
       "zed-symbol": { type: "string" },
+      verbose: { type: "boolean", default: false },
     },
     strict: true,
   });
+
+  const verbose = values.verbose as boolean;
+
+  if (verbose) {
+    console.error(`[verbose] file: ${values.file}`);
+    console.error(`[verbose] row: ${values.row}`);
+    console.error(`[verbose] column: ${values.column}`);
+    console.error(`[verbose] zed-symbol: ${values["zed-symbol"] ?? "(not set)"}`);
+    console.error(`[verbose] lsp-command: ${values["lsp-command"]}`);
+    console.error(`[verbose] timeout-seconds: ${values["timeout-seconds"]}`);
+  }
 
   if (!values.file || !values.row || !values.column) {
     console.error("error: --file, --row, and --column are required");
@@ -427,6 +453,9 @@ async function main(): Promise<number> {
     if (zedSymbol && zedSymbol.trim()) {
       try {
         fqn = buildRubyFqnFromZedSymbol(zedSymbol);
+        if (verbose) {
+          console.error(`[verbose] Using ZED_SYMBOL fallback: ${zedSymbol} -> ${fqn}`);
+        }
       } catch {
         const line = Math.max(row - 1, 0);
         const char = Math.max(column - 1, 0);
@@ -436,7 +465,10 @@ async function main(): Promise<number> {
           lspCommand,
           timeoutSeconds
         );
-        const symbol = chooseSymbolAtCursor(candidates, line, char);
+        const symbol = chooseSymbolAtCursor(candidates, line, char, verbose);
+        if (!symbol) {
+          throw new Error("No symbol contains the current cursor position.");
+        }
         fqn = buildRubyFqn(symbol);
       }
     } else {
@@ -448,7 +480,10 @@ async function main(): Promise<number> {
         lspCommand,
         timeoutSeconds
       );
-      const symbol = chooseSymbolAtCursor(candidates, line, char);
+      const symbol = chooseSymbolAtCursor(candidates, line, char, verbose);
+      if (!symbol) {
+        throw new Error("No symbol contains the current cursor position.");
+      }
       fqn = buildRubyFqn(symbol);
     }
 
@@ -456,7 +491,12 @@ async function main(): Promise<number> {
     console.log(fqn);
     return 0;
   } catch (err: any) {
-    console.error(`error: ${err.message}`);
+    if (verbose) {
+      console.error(`[verbose] error: ${err.message}`);
+      console.error(`[verbose] stack: ${err.stack}`);
+    } else {
+      console.error(`error: ${err.message}`);
+    }
     return 1;
   }
 }
