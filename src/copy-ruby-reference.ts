@@ -6,7 +6,7 @@ import { resolve } from "path";
 import { readFileSync } from "fs";
 import { pathToFileURL } from "url";
 
-const DEFAULT_LSP_COMMAND = "bundle exec srb tc --lsp";
+const DEFAULT_LSP_COMMAND = "bundle exec srb tc --lsp --disable-watchman";
 
 const SYMBOL_KIND_METHOD = 6;
 const SYMBOL_KIND_FUNCTION = 12;
@@ -327,7 +327,7 @@ async function querySymbols(
   try {
     await conn.request("initialize", {
       processId: null,
-      clientInfo: { name: "zed-copy-ruby-symbol", version: "0.1.0" },
+      clientInfo: { name: "copy-ruby-reference", version: "0.1.0" },
       rootUri,
       capabilities: {},
       workspaceFolders: [{ uri: rootUri, name: rootName }],

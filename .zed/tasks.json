@@ -1,21 +1,21 @@
 [
   {
-    "label": "Ruby: Copy FQN at Cursor",
-    "command": "bun",
+    "label": "Ruby: Copy Reference Name",
+    "command": "bin/copy-ruby-reference",
     "args": [
-      "run",
-      "scripts/copy_ruby_fqn.ts",
       "--file",
       "$ZED_FILE",
       "--row",
       "$ZED_ROW",
       "--column",
-      "$ZED_COLUMN"
+      "$ZED_COLUMN",
     ],
     "cwd": "$ZED_WORKTREE_ROOT",
     "use_new_terminal": false,
     "allow_concurrent_runs": false,
-    "reveal": "never",
-    "hide": "on_success"
-  }
+    "reveal": "always",
+    "hide": "on_success",
+    "show_command": true,
+    "show_summary": true,
+  },
 ]
