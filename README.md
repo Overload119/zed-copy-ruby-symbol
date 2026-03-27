@@ -21,9 +21,8 @@ If multiple symbols contain the cursor, the script picks the first deterministic
 
 1. **Run the install script** from your Ruby project root:
    ```sh
-   curl -fsSL https://raw.githubusercontent.com/your-repo/zed-copy-ruby-symbol/main/install.sh | bash
+   curl -fsSL https://raw.githubusercontent.com/Overload119/zed-copy-ruby-symbol/main/install.sh | bash
    ```
-   (Or clone and run locally: `bash /path/to/install.sh`)
 
    This builds `.zed/bin/copy-ruby-reference` and `.zed/tasks.json` (merges if already exists).
 
