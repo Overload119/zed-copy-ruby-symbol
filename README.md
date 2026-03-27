@@ -1,6 +1,6 @@
-# Cursor-Aware Ruby FQN Copy (Zed Task + Sorbet LSP)
+# Copy Ruby Symbol
 
-This project provides a Zed task that reads the active cursor location, asks Sorbet LSP for symbols in the current file, builds a Ruby fully qualified name, and copies it to the clipboard.
+This project provides a Zed task that reads the active cursor location, asks Sorbet LSP for symbols in the current file, builds a Ruby reference name, and copies it to the clipboard.
 
 ## What it does
 
@@ -9,40 +9,37 @@ This project provides a Zed task that reads the active cursor location, asks Sor
 - Cursor on a nested constant:
   - `module B; class A; X = 1; end; end` -> `B::A::X`
 
-If multiple symbols contain the cursor, the script picks the first deterministic match (smallest containing range, then source order).
+If multiple symbols contain the cursor, the script picks the first deterministic match (smallest containing range, then source order). It copies directly to the clipboard.
 
 ## Requirements
 
 - Zed with project tasks enabled.
-- [Bun](https://bun.sh/) runtime.
-- Sorbet LSP available in your project or shell path.
-  - Default command used by the script: `bundle exec srb tc --lsp`
+- [Bun](https://bun.sh/) to build the executable.
 - macOS for clipboard copy (`pbcopy`).
 
-## Included task
+## Installation
 
-The task is defined in `.zed/tasks.json`:
+1. **Run the install script** from your Ruby project root:
+   ```sh
+   curl -fsSL https://raw.githubusercontent.com/your-repo/zed-copy-ruby-symbol/main/install.sh | bash
+   ```
+   (Or clone and run locally: `bash /path/to/install.sh`)
 
-- Label: `Ruby: Copy FQN at Cursor`
-- Runs:
-  - `bun run scripts/copy_ruby_fqn.ts --file "$ZED_FILE" --row "$ZED_ROW" --column "$ZED_COLUMN"`
+   This builds `.zed/bin/copy-ruby-reference` and `.zed/tasks.json` (merges if already exists).
 
-Run it from command palette via `task: spawn`, then pick `Ruby: Copy FQN at Cursor`.
+   For local development, run `bun run build` to compile `src/copy-ruby-reference.ts` into `bin/copy-ruby-reference`.
 
-## Optional keybinding
+2. **Add a keybinding** to `~/.config/zed/keymap.json` (manual step):
+   ```json
+   {
+     "context": "Editor",
+     "bindings": {
+       "alt-c": ["task::Spawn", { "task_name": "Ruby: Copy Reference Name" }]
+     }
+   }
+   ```
 
-Add this to your `keymap.json` to trigger the task directly:
-
-```json
-[
-  {
-    "context": "Workspace",
-    "bindings": {
-      "cmd-alt-y": ["task::Spawn", { "task_name": "Ruby: Copy FQN at Cursor" }]
-    }
-  }
-]
-```
+3. **Restart Zed** — the task will appear in `task: spawn`.
 
 ## Notes and limitations
 
@@ -52,10 +49,18 @@ Add this to your `keymap.json` to trigger the task directly:
 
 ## Script options
 
-`scripts/copy_ruby_fqn.ts` supports:
+`src/copy-ruby-reference.ts` (compiled to `bin/copy-ruby-reference`) supports:
 
 - `--file`
 - `--row`
 - `--column`
 - `--lsp-command` (override default Sorbet command)
 - `--timeout-seconds`
+
+## TODO: Testing
+
+```sh
+bun run test
+```
+
+Tests build the CLI into `bin/` and run it against files in `example/`.

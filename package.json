@@ -1,0 +1,12 @@
+{
+  "name": "copy-ruby-reference",
+  "private": true,
+  "scripts": {
+    "build": "mkdir -p bin && bun build --compile ./src/copy-ruby-reference.ts --outfile ./bin/copy-ruby-reference",
+    "test": "bun test"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/bun": "^1.3.10"
+  }
+}
