@@ -1,0 +1,109 @@
+{
+  "formatVersion": 1,
+  "skills": {
+    "commit": {
+      "managed": true,
+      "sourceSkill": "ah-commit",
+      "sourcePath": "/private/var/folders/0_/jy3ns7t516q55jh6pz4jwbvh0000gn/T/agent-harness.0B5eTM/skills/ah-commit",
+      "targetPath": ".agents/skills/commit",
+      "installedFiles": {
+        "SKILL.md": "62488b7fe8a3a47c241ae370e2c783ba98cc5ba353e7f2954c4fce644b2d000b"
+      }
+    },
+    "compound": {
+      "managed": true,
+      "sourceSkill": "ah-compound",
+      "sourcePath": "/private/var/folders/0_/jy3ns7t516q55jh6pz4jwbvh0000gn/T/agent-harness.0B5eTM/skills/ah-compound",
+      "targetPath": ".agents/skills/compound",
+      "installedFiles": {
+        "SKILL.md": "6a6cd3743605b8567b6eeac2d9a7d80f275e512165c1a0bb53c0f6b58a994d43"
+      }
+    },
+    "executor": {
+      "managed": true,
+      "sourceSkill": "ah-executor",
+      "sourcePath": "/private/var/folders/0_/jy3ns7t516q55jh6pz4jwbvh0000gn/T/agent-harness.0B5eTM/skills/ah-executor",
+      "targetPath": ".agents/skills/executor",
+      "installedFiles": {
+        "SKILL.md": "649c6071995aee0d50d72d3826b07a307adc61c11f49b0bf772c5aac32611d51"
+      }
+    },
+    "memory": {
+      "managed": true,
+      "sourceSkill": "ah-memory",
+      "sourcePath": "/private/var/folders/0_/jy3ns7t516q55jh6pz4jwbvh0000gn/T/agent-harness.0B5eTM/skills/ah-memory",
+      "targetPath": ".agents/skills/memory",
+      "installedFiles": {
+        "SKILL.md": "d073439a0722ab1976683d58721b2a3b276c251abaeb248f53b2f304ee46d0d8"
+      }
+    },
+    "mermaid": {
+      "managed": true,
+      "sourceSkill": "ah-mermaid",
+      "sourcePath": "/private/var/folders/0_/jy3ns7t516q55jh6pz4jwbvh0000gn/T/agent-harness.0B5eTM/skills/ah-mermaid",
+      "targetPath": ".agents/skills/mermaid",
+      "installedFiles": {
+        "SKILL.md": "ac5a37ef8c463ea072707257b49d958e723199c64d739548a726e6b6876b4105"
+      }
+    },
+    "oneshot": {
+      "managed": true,
+      "sourceSkill": "ah-oneshot",
+      "sourcePath": "/private/var/folders/0_/jy3ns7t516q55jh6pz4jwbvh0000gn/T/agent-harness.0B5eTM/skills/ah-oneshot",
+      "targetPath": ".agents/skills/oneshot",
+      "installedFiles": {
+        "SKILL.md": "00bfc9201bbf855b9c8208dcdf06fe1a1afa97158599106f385c773fe449c4d4"
+      }
+    },
+    "plan": {
+      "managed": true,
+      "sourceSkill": "ah-plan",
+      "sourcePath": "/private/var/folders/0_/jy3ns7t516q55jh6pz4jwbvh0000gn/T/agent-harness.0B5eTM/skills/ah-plan",
+      "targetPath": ".agents/skills/plan",
+      "installedFiles": {
+        "SKILL.md": "1e226e0f76810df5eac6e8704bd67e9f10648df00cf07c63ac5f89279a11c55b"
+      }
+    },
+    "prd": {
+      "managed": true,
+      "sourceSkill": "ah-prd",
+      "sourcePath": "/private/var/folders/0_/jy3ns7t516q55jh6pz4jwbvh0000gn/T/agent-harness.0B5eTM/skills/ah-prd",
+      "targetPath": ".agents/skills/prd",
+      "installedFiles": {
+        "SKILL.md": "88fe41c5f1d6fa312f6350aac410834a964b2db6dbf61529ed3fa9819e052eb6"
+      }
+    },
+    "review": {
+      "managed": true,
+      "sourceSkill": "ah-review",
+      "sourcePath": "/private/var/folders/0_/jy3ns7t516q55jh6pz4jwbvh0000gn/T/agent-harness.0B5eTM/skills/ah-review",
+      "targetPath": ".agents/skills/review",
+      "installedFiles": {
+        "SKILL.md": "9f9fabd6b2bdd00d16b5bf6c7666adb067f2a9a80df59fa17a3018e76f7e66bf"
+      }
+    },
+    "ship": {
+      "managed": true,
+      "sourceSkill": "ah-ship",
+      "sourcePath": "/private/var/folders/0_/jy3ns7t516q55jh6pz4jwbvh0000gn/T/agent-harness.0B5eTM/skills/ah-ship",
+      "targetPath": ".agents/skills/ship",
+      "installedFiles": {
+        "SKILL.md": "9d617c0d57600cd7aa68da73c6a12edbb698e73b4588e6d31c767964c475b71b"
+      }
+    },
+    "verify": {
+      "managed": true,
+      "sourceSkill": "ah-verify",
+      "sourcePath": "/private/var/folders/0_/jy3ns7t516q55jh6pz4jwbvh0000gn/T/agent-harness.0B5eTM/skills/ah-verify",
+      "targetPath": ".agents/skills/verify",
+      "installedFiles": {
+        "SKILL.md": "70e31b7bf05fcdd752fd6b8b1476f89c1ed32c48c2e6d147717c3e3b6ec0c6bb"
+      }
+    }
+  },
+  "source": {
+    "repoRoot": "/private/var/folders/0_/jy3ns7t516q55jh6pz4jwbvh0000gn/T/agent-harness.X8NyrL",
+    "commit": "c0ca21d03773eeec232b4e6d13075a3b059660f7"
+  },
+  "targetRoot": "/Users/amirsharif/Projects/zed-copy-ruby-symbol"
+}

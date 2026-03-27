@@ -1,0 +1,15 @@
+{
+  "mcp": {
+    "memory": {
+      "type": "local",
+      "command": [
+        "bunx",
+        "--bun",
+        "@aitytech/agentkits-memory",
+        "server"
+      ],
+      "enabled": true
+    }
+  },
+  "$schema": "https://opencode.ai/config.json"
+}
