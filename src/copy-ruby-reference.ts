@@ -370,6 +370,23 @@ async function querySymbols(
 
 // --- Main ---
 
+function buildRubyFqnFromZedSymbol(zedSymbol: string): string {
+  const parts = zedSymbol.split(" > ").map((p) => p.trim());
+  if (parts.length === 0 || !parts[0]) {
+    throw new Error("ZED_SYMBOL is empty");
+  }
+  const symbolName = parts[parts.length - 1];
+  const namespaces = parts.slice(0, -1);
+
+  const isMethod = symbolName.startsWith("fn ") || symbolName.startsWith("def ");
+  const name = symbolName.replace(/^(fn |def )/, "");
+
+  if (isMethod) {
+    return namespaces.length ? namespaces.join("::") + "." + name : name;
+  }
+  return namespaces.length ? [...namespaces, name].join("::") : name;
+}
+
 async function main(): Promise<number> {
   const { values } = parseArgs({
     args: Bun.argv.slice(2),
@@ -379,6 +396,7 @@ async function main(): Promise<number> {
       column: { type: "string" },
       "lsp-command": { type: "string", default: DEFAULT_LSP_COMMAND },
       "timeout-seconds": { type: "string", default: "12" },
+      "zed-symbol": { type: "string" },
     },
     strict: true,
   });
@@ -393,6 +411,7 @@ async function main(): Promise<number> {
   const column = parseInt(values.column, 10);
   const lspCommand = values["lsp-command"]!;
   const timeoutSeconds = parseFloat(values["timeout-seconds"]!);
+  const zedSymbol = values["zed-symbol"];
 
   let fileText: string;
   try {
@@ -403,18 +422,36 @@ async function main(): Promise<number> {
   }
 
   try {
-    // Zed task variables are 1-based; LSP positions are 0-based.
-    const line = Math.max(row - 1, 0);
-    const char = Math.max(column - 1, 0);
+    let fqn: string;
 
-    const candidates = await querySymbols(
-      filePath,
-      fileText,
-      lspCommand,
-      timeoutSeconds
-    );
-    const symbol = chooseSymbolAtCursor(candidates, line, char);
-    const fqn = buildRubyFqn(symbol);
+    if (zedSymbol && zedSymbol.trim()) {
+      try {
+        fqn = buildRubyFqnFromZedSymbol(zedSymbol);
+      } catch {
+        const line = Math.max(row - 1, 0);
+        const char = Math.max(column - 1, 0);
+        const candidates = await querySymbols(
+          filePath,
+          fileText,
+          lspCommand,
+          timeoutSeconds
+        );
+        const symbol = chooseSymbolAtCursor(candidates, line, char);
+        fqn = buildRubyFqn(symbol);
+      }
+    } else {
+      const line = Math.max(row - 1, 0);
+      const char = Math.max(column - 1, 0);
+      const candidates = await querySymbols(
+        filePath,
+        fileText,
+        lspCommand,
+        timeoutSeconds
+      );
+      const symbol = chooseSymbolAtCursor(candidates, line, char);
+      fqn = buildRubyFqn(symbol);
+    }
+
     await copyToClipboard(fqn);
     console.log(fqn);
     return 0;

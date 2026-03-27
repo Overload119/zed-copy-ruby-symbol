@@ -21,7 +21,7 @@ fi
 
 NEW_TASK='{
   "label": "Ruby: Copy Reference Name",
-  "command": ".zed/bin/copy-ruby-reference --file \"$ZED_FILE\" --row \"$ZED_ROW\" --column \"$ZED_COLUMN\""
+  "command": "ZED_SYMBOL=\"$ZED_SYMBOL\" .zed/bin/copy-ruby-reference --file \"$ZED_FILE\" --row \"$ZED_ROW\" --column \"$ZED_COLUMN\""
 }'
 
 if [ -f "$TASKS_FILE" ]; then
