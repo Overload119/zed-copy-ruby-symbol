@@ -1,21 +1,11 @@
 import { spawn } from "child_process";
 import { resolve } from "path";
+import { test, expect } from "bun:test";
 
 const EXAMPLES_DIR = resolve(__dirname, "..", "example");
+const binPath = resolve(__dirname, "..", "bin", "copy-ruby-reference");
 
-async function build(): Promise<void> {
-  const { stdout, stderr, exitCode } = Bun.spawnSync(["bun", "run", "build"], {
-    cwd: resolve(__dirname, ".."),
-  });
-  if (exitCode !== 0) {
-    throw new Error(
-      `build failed:\n${stderr.toString()}\n${stdout.toString()}`
-    );
-  }
-}
-
-async function run(args: string[]): Promise<{ stdout: string; stderr: string; exitCode: number }> {
-  const binPath = resolve(__dirname, "..", "bin", "copy-ruby-reference");
+function run(args: string[]): Promise<{ stdout: string; stderr: string; exitCode: number }> {
   return new Promise((resolve, reject) => {
     const proc = spawn(binPath, args, { cwd: EXAMPLES_DIR });
     let stdout = "";
@@ -27,85 +17,43 @@ async function run(args: string[]): Promise<{ stdout: string; stderr: string; ex
   });
 }
 
-async function main() {
-  await build();
+test("class constant in MyFile", async () => {
+  const result = await run(["--file", "file.rb", "--row", "4", "--column", "5"]);
+  expect(result.exitCode).toBe(0);
+  expect(result.stdout).toContain("MyFile::MY_CONTEXT");
+});
 
-  const tests = [
-    {
-      name: "class constant in MyFile",
-      args: ["--file", "file.rb", "--row", "4", "--column", "5"],
-      expectedExit: 0,
-      expectedOutput: "MyFile::MY_CONTEXT",
-    },
-    {
-      name: "top-level module",
-      args: ["--file", "edge_cases.rb", "--row", "14", "--column", "2"],
-      expectedExit: 0,
-      expectedOutput: "TopLevelModule",
-    },
-    {
-      name: "class method",
-      args: ["--file", "edge_cases.rb", "--row", "4", "--column", "12"],
-      expectedExit: 0,
-      expectedOutput: "EdgeCaseClass",
-    },
-    {
-      name: "instance method",
-      args: ["--file", "edge_cases.rb", "--row", "7", "--column", "12"],
-      expectedExit: 0,
-      expectedOutput: "EdgeCaseClass",
-    },
-    {
-      name: "nested module",
-      args: ["--file", "namespace_test.rb", "--row", "4", "--column", "2"],
-      expectedExit: 0,
-      expectedOutput: "TestNamespace",
-    },
-    {
-      name: "nested method",
-      args: ["--file", "namespace_test.rb", "--row", "5", "--column", "9"],
-      expectedExit: 0,
-      expectedOutput: "TestNamespace::NestedNamespace.my_method",
-    },
-    {
-      name: "missing file",
-      args: ["--file", "nonexistent.rb", "--row", "1", "--column", "1"],
-      expectedExit: 1,
-      expectedOutput: null,
-    },
-  ];
+test("top-level module", async () => {
+  const result = await run(["--file", "edge_cases.rb", "--row", "14", "--column", "2"]);
+  expect(result.exitCode).toBe(0);
+  expect(result.stdout).toContain("TopLevelModule");
+});
 
-  let passed = 0;
-  let failed = 0;
+test("class method", async () => {
+  const result = await run(["--file", "edge_cases.rb", "--row", "4", "--column", "12"]);
+  expect(result.exitCode).toBe(0);
+  expect(result.stdout).toContain("EdgeCaseClass");
+});
 
-  for (const test of tests) {
-    const result = await run(test.args);
+test("instance method", async () => {
+  const result = await run(["--file", "edge_cases.rb", "--row", "7", "--column", "12"]);
+  expect(result.exitCode).toBe(0);
+  expect(result.stdout).toContain("EdgeCaseClass");
+});
 
-    if (result.exitCode !== test.expectedExit) {
-      console.error(`FAIL: ${test.name}`);
-      console.error(`  Expected exit ${test.expectedExit}, got ${result.exitCode}`);
-      console.error(`  stderr: ${result.stderr}`);
-      failed++;
-      continue;
-    }
+test("nested module", async () => {
+  const result = await run(["--file", "namespace_test.rb", "--row", "4", "--column", "2"]);
+  expect(result.exitCode).toBe(0);
+  expect(result.stdout).toContain("TestNamespace");
+});
 
-    if (test.expectedOutput !== null && !result.stdout.includes(test.expectedOutput)) {
-      console.error(`FAIL: ${test.name}`);
-      console.error(`  Expected output to contain: ${test.expectedOutput}`);
-      console.error(`  Got: ${result.stdout}`);
-      failed++;
-      continue;
-    }
+test("nested method", async () => {
+  const result = await run(["--file", "namespace_test.rb", "--row", "5", "--column", "9"]);
+  expect(result.exitCode).toBe(0);
+  expect(result.stdout).toContain("TestNamespace::NestedNamespace.my_method");
+});
 
-    console.log(`PASS: ${test.name}`);
-    passed++;
-  }
-
-  console.log(`\n${passed} passed, ${failed} failed`);
-  process.exit(failed > 0 ? 1 : 0);
-}
-
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
+test("missing file", async () => {
+  const result = await run(["--file", "nonexistent.rb", "--row", "1", "--column", "1"]);
+  expect(result.exitCode).toBe(1);
 });
