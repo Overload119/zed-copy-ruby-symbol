@@ -241,17 +241,31 @@ function flattenSymbolInformation(
 function chooseSymbolAtCursor(
   candidates: SymbolCandidate[],
   line: number,
-  char: number
-): SymbolCandidate {
+  char: number,
+  verbose: boolean = false
+): SymbolCandidate | null {
   const containing = candidates.filter((c) => contains(c, line, char));
   if (containing.length === 0) {
-    throw new Error("No symbol contains the current cursor position.");
+    if (verbose) {
+      console.error(`[verbose] No symbol contains cursor at line ${line}, char ${char}`);
+      console.error(`[verbose] Available symbols (${candidates.length}):`);
+      for (const c of candidates.slice(0, 10)) {
+        console.error(`[verbose]   - ${c.name} [${c.kind}] at ${c.startLine}:${c.startChar}-${c.endLine}:${c.endChar} path=${c.path.map(([n]) => n).join(" > ")}`);
+      }
+      if (candidates.length > 10) {
+        console.error(`[verbose]   ... and ${candidates.length - 10} more`);
+      }
+    }
+    return null;
   }
   containing.sort((a, b) => {
     const [aLines, aChars] = spanSize(a);
     const [bLines, bChars] = spanSize(b);
     return aLines - bLines || aChars - bChars || a.order - b.order;
   });
+  if (verbose) {
+    console.error(`[verbose] Selected symbol: ${containing[0].name}`);
+  }
   return containing[0];
 }
 
@@ -370,6 +384,23 @@ async function querySymbols(
 
 // --- Main ---
 
+function buildRubyFqnFromZedSymbol(zedSymbol: string): string {
+  const parts = zedSymbol.split(" > ").map((p) => p.trim());
+  if (parts.length === 0 || !parts[0]) {
+    throw new Error("ZED_SYMBOL is empty");
+  }
+  const symbolName = parts[parts.length - 1];
+  const namespaces = parts.slice(0, -1);
+
+  const isMethod = symbolName.startsWith("fn ") || symbolName.startsWith("def ");
+  const name = symbolName.replace(/^(fn |def )/, "");
+
+  if (isMethod) {
+    return namespaces.length ? namespaces.join("::") + "." + name : name;
+  }
+  return namespaces.length ? [...namespaces, name].join("::") : name;
+}
+
 async function main(): Promise<number> {
   const { values } = parseArgs({
     args: Bun.argv.slice(2),
@@ -379,9 +410,22 @@ async function main(): Promise<number> {
       column: { type: "string" },
       "lsp-command": { type: "string", default: DEFAULT_LSP_COMMAND },
       "timeout-seconds": { type: "string", default: "12" },
+      "zed-symbol": { type: "string" },
+      verbose: { type: "boolean", default: false },
     },
     strict: true,
   });
+
+  const verbose = values.verbose as boolean;
+
+  if (verbose) {
+    console.error(`[verbose] file: ${values.file}`);
+    console.error(`[verbose] row: ${values.row}`);
+    console.error(`[verbose] column: ${values.column}`);
+    console.error(`[verbose] zed-symbol: ${values["zed-symbol"] ?? "(not set)"}`);
+    console.error(`[verbose] lsp-command: ${values["lsp-command"]}`);
+    console.error(`[verbose] timeout-seconds: ${values["timeout-seconds"]}`);
+  }
 
   if (!values.file || !values.row || !values.column) {
     console.error("error: --file, --row, and --column are required");
@@ -393,6 +437,7 @@ async function main(): Promise<number> {
   const column = parseInt(values.column, 10);
   const lspCommand = values["lsp-command"]!;
   const timeoutSeconds = parseFloat(values["timeout-seconds"]!);
+  const zedSymbol = values["zed-symbol"];
 
   let fileText: string;
   try {
@@ -403,23 +448,55 @@ async function main(): Promise<number> {
   }
 
   try {
-    // Zed task variables are 1-based; LSP positions are 0-based.
-    const line = Math.max(row - 1, 0);
-    const char = Math.max(column - 1, 0);
+    let fqn: string;
 
-    const candidates = await querySymbols(
-      filePath,
-      fileText,
-      lspCommand,
-      timeoutSeconds
-    );
-    const symbol = chooseSymbolAtCursor(candidates, line, char);
-    const fqn = buildRubyFqn(symbol);
+    if (zedSymbol && zedSymbol.trim()) {
+      try {
+        fqn = buildRubyFqnFromZedSymbol(zedSymbol);
+        if (verbose) {
+          console.error(`[verbose] Using ZED_SYMBOL fallback: ${zedSymbol} -> ${fqn}`);
+        }
+      } catch {
+        const line = Math.max(row - 1, 0);
+        const char = Math.max(column - 1, 0);
+        const candidates = await querySymbols(
+          filePath,
+          fileText,
+          lspCommand,
+          timeoutSeconds
+        );
+        const symbol = chooseSymbolAtCursor(candidates, line, char, verbose);
+        if (!symbol) {
+          throw new Error("No symbol contains the current cursor position.");
+        }
+        fqn = buildRubyFqn(symbol);
+      }
+    } else {
+      const line = Math.max(row - 1, 0);
+      const char = Math.max(column - 1, 0);
+      const candidates = await querySymbols(
+        filePath,
+        fileText,
+        lspCommand,
+        timeoutSeconds
+      );
+      const symbol = chooseSymbolAtCursor(candidates, line, char, verbose);
+      if (!symbol) {
+        throw new Error("No symbol contains the current cursor position.");
+      }
+      fqn = buildRubyFqn(symbol);
+    }
+
     await copyToClipboard(fqn);
     console.log(fqn);
     return 0;
   } catch (err: any) {
-    console.error(`error: ${err.message}`);
+    if (verbose) {
+      console.error(`[verbose] error: ${err.message}`);
+      console.error(`[verbose] stack: ${err.stack}`);
+    } else {
+      console.error(`error: ${err.message}`);
+    }
     return 1;
   }
 }

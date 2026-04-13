@@ -21,7 +21,12 @@ fi
 
 NEW_TASK='{
   "label": "Ruby: Copy Reference Name",
-  "command": ".zed/bin/copy-ruby-reference --file \"$ZED_FILE\" --row \"$ZED_ROW\" --column \"$ZED_COLUMN\""
+  "command": "ZED_SYMBOL=\"$ZED_SYMBOL\" .zed/bin/copy-ruby-reference --file \"$ZED_FILE\" --row \"$ZED_ROW\" --column \"$ZED_COLUMN\""
+}'
+
+VERBOSE_TASK='{
+  "label": "Ruby: Copy Reference Name (verbose)",
+  "command": "ZED_SYMBOL=\"$ZED_SYMBOL\" .zed/bin/copy-ruby-reference --file \"$ZED_FILE\" --row \"$ZED_ROW\" --column \"$ZED_COLUMN\" --verbose"
 }'
 
 if [ -f "$TASKS_FILE" ]; then
@@ -29,11 +34,11 @@ if [ -f "$TASKS_FILE" ]; then
   if echo "$EXISTING" | grep -q "Ruby: Copy Reference Name"; then
     echo "Task already exists in $TASKS_FILE, skipping."
   else
-    echo "$EXISTING" | jq ". + [$NEW_TASK]" > "$TASKS_FILE"
-    echo "Added task to existing $TASKS_FILE"
+    echo "$EXISTING" | jq ". + [$NEW_TASK, $VERBOSE_TASK]" > "$TASKS_FILE"
+    echo "Added tasks to existing $TASKS_FILE"
   fi
 else
-  echo "[$NEW_TASK]" > "$TASKS_FILE"
+  echo "[$NEW_TASK, $VERBOSE_TASK]" > "$TASKS_FILE"
   echo "Created $TASKS_FILE"
 fi
 
